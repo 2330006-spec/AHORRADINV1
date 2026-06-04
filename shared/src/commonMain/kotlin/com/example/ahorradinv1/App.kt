@@ -120,314 +120,208 @@ fun LoginScreen(
 
 @Composable
 fun DashboardScreen() {
+    val metaApi = remember { com.example.ahorradinv1.metas.data.MetaApi() }
+    val metaLocal = remember { com.example.ahorradinv1.metas.data.MetaLocalDataSource() }
+    val metaRepository = remember { com.example.ahorradinv1.metas.data.MetaRepositoryImpl(metaApi, metaLocal) }
+    val metaViewModel = remember { com.example.ahorradinv1.metas.presentation.MetaViewModel(metaRepository) }
+
+    // Escuchamos el estado de las metas para el inicio
+    val metaState by metaViewModel.uiState.collectAsState()
+
+    var seccionActiva by remember { mutableStateOf("inicio") }
 
     var saldo by remember { mutableStateOf(3250.0) }
     var ingresos by remember { mutableStateOf(5000.0) }
     var gastos by remember { mutableStateOf(1750.0) }
-
     var mostrarIngreso by remember { mutableStateOf(false) }
     var mostrarGasto by remember { mutableStateOf(false) }
-
     var cantidadIngreso by remember { mutableStateOf("") }
     var cantidadGasto by remember { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .background(Color(0xFFF5F5F5))
-    ) {
-
-        Text(
-            text = "¡Hola, Mauricio Ramos Castro!",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            elevation = CardDefaults.cardElevation(8.dp)
-        ) {
-
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+    Scaffold(
+        bottomBar = {
+            Surface(
+                tonalElevation = 8.dp,
+                modifier = Modifier.fillMaxWidth()
             ) {
-
-                Text("Saldo Actual:")
-
-                Text(
-                    text = "$${String.format("%.2f", saldo)} MXN",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceAround
                 ) {
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-
-                        Text(
-                            "+$${String.format("%.0f", ingresos)}",
-                            color = Color(0xFF2E7D32),
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Text("Ingresos")
+                    TextButton(onClick = { seccionActiva = "inicio" }) {
+                        Text("Inicio", color = if (seccionActiva == "inicio") Color(0xFF2E7D32) else Color.Gray)
                     }
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-
-                        Text(
-                            "-$${String.format("%.0f", gastos)}",
-                            color = Color.Red,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Text("Gastos")
+                    TextButton(onClick = { seccionActiva = "metas" }) {
+                        Text("Metas", color = if (seccionActiva == "metas") Color(0xFF2E7D32) else Color.Gray)
                     }
+                    Text("Calendario", modifier = Modifier.padding(top = 12.dp), color = Color.Gray)
+                    Text("Perfil", modifier = Modifier.padding(top = 12.dp), color = Color.Gray)
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Text(
-            text = "Mis Metas",
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-
-            Card(
-                modifier = Modifier.weight(1f)
-            ) {
-
+    ) { paddingValues ->
+        Box(modifier = Modifier.padding(paddingValues)) {
+            if (seccionActiva == "metas") {
+                // Pantalla de administración completa
+                com.example.ahorradinv1.metas.presentation.MetaScreen(viewModel = metaViewModel)
+            } else {
+                // PANTALLA DE INICIO ACTUALIZADA (DINÁMICA)
                 Column(
-                    modifier = Modifier.padding(12.dp)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp)
+                        .background(Color(0xFFF5F5F5))
                 ) {
-
                     Text(
-                        "Laptop Nueva",
+                        text = "¡Hola, Mauricio Ramos Castro!",
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Bold
                     )
 
-                    Text("$15,000 / $3,750")
+                    Spacer(modifier = Modifier.height(16.dp))
 
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        elevation = CardDefaults.cardElevation(8.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text("Saldo Actual:")
+                            Text(
+                                text = "$${String.format("%.2f", saldo)} MXN",
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text("+$${String.format("%.0f", ingresos)}", color = Color(0xFF2E7D32), fontWeight = FontWeight.Bold)
+                                    Text("Ingresos")
+                                }
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text("-$${String.format("%.0f", gastos)}", color = Color.Red, fontWeight = FontWeight.Bold)
+                                    Text("Gastos")
+                                }
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // --- AQUÍ SE MUESTRAN LAS METAS DINÁMICAMENTE EN EL INICIO ---
+                    Text(text = "Mis Metas Fijadas", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    when (val currentState = metaState) {
+                        is com.example.ahorradinv1.metas.presentation.MetaUiState.Success -> {
+                            if (currentState.lista.isEmpty()) {
+                                Text("No hay metas activas fijadas.", color = Color.Gray)
+                            } else {
+                                // Mostramos hasta las primeras 2 metas en fila en el Dashboard
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    currentState.lista.take(2).forEachIndexed { index, meta ->
+                                        if (index > 0) Spacer(modifier = Modifier.width(10.dp))
+                                        Card(modifier = Modifier.weight(1f)) {
+                                            Column(modifier = Modifier.padding(12.dp)) {
+                                                Text(meta.titulo, fontWeight = FontWeight.Bold, maxLines = 1)
+                                                Text(meta.descripcion, fontSize = 12.sp, color = Color.Gray, maxLines = 1)
+                                                Spacer(modifier = Modifier.height(8.dp))
+                                                Text(
+                                                    text = if (meta.completada) "✅ OK" else "⏳ Pendiente",
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                        }
+                                    }
+                                    // Si solo hay una meta, agregamos un Box invisible para mantener el tamaño equilibrado
+                                    if (currentState.lista.size == 1) {
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Box(modifier = Modifier.weight(1f))
+                                    }
+                                }
+                            }
+                        }
+                        else -> {
+                            Text("Cargando metas fijadas...", color = Color.Gray)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Text(text = "Movimientos Recientes", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     Spacer(modifier = Modifier.height(8.dp))
+                    Text("+3300 Depósito")
+                    Text("-45 Cafetería")
 
-                    LinearProgressIndicator(
-                        progress = { 0.25f },
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF2E7D32)),
                         modifier = Modifier.fillMaxWidth()
-                    )
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text("Recomendación Inteligente", color = Color.White, fontWeight = FontWeight.Bold)
+                            Text("Reduce gastos hormiga esta semana y acelera tu ahorro.", color = Color.White)
+                        }
+                    }
 
-                    Text("25%")
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(onClick = { mostrarIngreso = true }) { Text("Añadir Ingreso") }
+                        Button(onClick = { mostrarGasto = true }) { Text("Añadir Gasto") }
+                    }
                 }
             }
-
-            Spacer(modifier = Modifier.width(10.dp))
-
-            Card(
-                modifier = Modifier.weight(1f)
-            ) {
-
-                Column(
-                    modifier = Modifier.padding(12.dp)
-                ) {
-
-                    Text(
-                        "Fondo Emergencia",
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Text("$5,000 / $2,500")
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    LinearProgressIndicator(
-                        progress = { 0.50f },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Text("50%")
-                }
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Text(
-            text = "Movimientos Recientes",
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text("+3300 Depósito")
-        Text("-45 Cafetería")
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFF2E7D32)
-            ),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-
-                Text(
-                    "Recomendación Inteligente",
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Text(
-                    "Reduce gastos hormiga esta semana y acelera tu ahorro para la Laptop.",
-                    color = Color.White
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-
-            Button(
-                onClick = {
-                    mostrarIngreso = true
-                }
-            ) {
-                Text("Añadir Ingreso")
-            }
-
-            Button(
-                onClick = {
-                    mostrarGasto = true
-                }
-            ) {
-                Text("Añadir Gasto")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-
-            Text("Inicio")
-            Text("Metas")
-            Text("Calendario")
-            Text("Perfil")
         }
     }
 
+    // Cuadros de diálogo para Ingresos y Gastos permanecen intactos
     if (mostrarIngreso) {
-
         AlertDialog(
-            onDismissRequest = {
-                mostrarIngreso = false
-            },
+            onDismissRequest = { mostrarIngreso = false },
             confirmButton = {
-
-                Button(
-                    onClick = {
-
-                        val monto =
-                            cantidadIngreso.toDoubleOrNull() ?: 0.0
-
-                        saldo += monto
-                        ingresos += monto
-
-                        cantidadIngreso = ""
-                        mostrarIngreso = false
-                    }
-                ) {
-                    Text("Guardar")
-                }
+                Button(onClick = {
+                    val monto = cantidadIngreso.toDoubleOrNull() ?: 0.0
+                    saldo += monto
+                    ingresos += monto
+                    cantidadIngreso = ""
+                    mostrarIngreso = false
+                }) { Text("Guardar") }
             },
-            title = {
-                Text("Nuevo Ingreso")
-            },
-            text = {
-
-                OutlinedTextField(
-                    value = cantidadIngreso,
-                    onValueChange = {
-                        cantidadIngreso = it
-                    },
-                    label = {
-                        Text("Cantidad")
-                    }
-                )
-            }
+            title = { Text("Nuevo Ingreso") },
+            text = { OutlinedTextField(value = cantidadIngreso, onValueChange = { cantidadIngreso = it }, label = { Text("Cantidad") }) }
         )
     }
 
     if (mostrarGasto) {
-
         AlertDialog(
-            onDismissRequest = {
-                mostrarGasto = false
-            },
+            onDismissRequest = { mostrarGasto = false },
             confirmButton = {
-
-                Button(
-                    onClick = {
-
-                        val monto =
-                            cantidadGasto.toDoubleOrNull() ?: 0.0
-
-                        saldo -= monto
-                        gastos += monto
-
-                        cantidadGasto = ""
-                        mostrarGasto = false
-                    }
-                ) {
-                    Text("Guardar")
-                }
+                Button(onClick = {
+                    val monto = cantidadGasto.toDoubleOrNull() ?: 0.0
+                    saldo -= monto
+                    gastos += monto
+                    cantidadGasto = ""
+                    mostrarGasto = false
+                }) { Text("Guardar") }
             },
-            title = {
-                Text("Nuevo Gasto")
-            },
-            text = {
-
-                OutlinedTextField(
-                    value = cantidadGasto,
-                    onValueChange = {
-                        cantidadGasto = it
-                    },
-                    label = {
-                        Text("Cantidad")
-                    }
-                )
-            }
+            title = { Text("Nuevo Gasto") },
+            text = { OutlinedTextField(value = cantidadGasto, onValueChange = { cantidadGasto = it }, label = { Text("Cantidad") }) }
         )
     }
 }
