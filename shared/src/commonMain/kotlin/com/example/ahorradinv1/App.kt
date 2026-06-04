@@ -121,6 +121,11 @@ fun LoginScreen(
 @Composable
 fun DashboardScreen() {
 
+    // Inicialización de las capas de datos y servicios compartidos en commonMain
+    val apiService = remember { ApiService() }
+    val metaService = remember { MetaService(apiService) }
+    val coroutineScope = rememberCoroutineScope()
+
     var saldo by remember { mutableStateOf(3250.0) }
     var ingresos by remember { mutableStateOf(5000.0) }
     var gastos by remember { mutableStateOf(1750.0) }
@@ -130,6 +135,16 @@ fun DashboardScreen() {
 
     var cantidadIngreso by remember { mutableStateOf("") }
     var cantidadGasto by remember { mutableStateOf("") }
+
+    // Variable de estado para controlar la Recomendación Inteligente dinámica de forma reactiva
+    var consejoDeAhorro by remember {
+        mutableStateOf("Cargando recomendación del servidor Railway...")
+    }
+
+    // LaunchedEffect ejecuta la petición asíncrona al cargar el Dashboard sin congelar la UI
+    LaunchedEffect(Unit) {
+        consejoDeAhorro = metaService.proveerConsejoOptimizado(nombreMeta = "Laptop Nueva")
+    }
 
     Column(
         modifier = Modifier
@@ -285,6 +300,7 @@ fun DashboardScreen() {
 
         Spacer(modifier = Modifier.height(20.dp))
 
+        // SECCIÓN REQUERIDA EXAMEN: Recuadro Verde de Recomendación Inteligente conectado al Backend
         Card(
             colors = CardDefaults.cardColors(
                 containerColor = Color(0xFF2E7D32)
@@ -302,8 +318,9 @@ fun DashboardScreen() {
                     fontWeight = FontWeight.Bold
                 )
 
+                // Imprime de forma dinámica la cadena de texto recuperada y deserializada por Ktor Client
                 Text(
-                    "Reduce gastos hormiga esta semana y acelera tu ahorro para la Laptop.",
+                    text = consejoDeAhorro,
                     color = Color.White
                 )
             }
