@@ -340,10 +340,8 @@ fun DashboardScreen() {
     var saldo by remember { mutableStateOf(3250.0) }
     var ingresos by remember { mutableStateOf(5000.0) }
     var gastos by remember { mutableStateOf(1750.0) }
-
     var mostrarIngreso by remember { mutableStateOf(false) }
     var mostrarGasto by remember { mutableStateOf(false) }
-
     var cantidadIngreso by remember { mutableStateOf("") }
     var cantidadGasto by remember { mutableStateOf("") }
 
@@ -371,47 +369,20 @@ fun DashboardScreen() {
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
-                Text("Saldo Actual:")
-
-                Text(
-                    text = "$${String.format("%.2f", saldo)} MXN",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceAround
                 ) {
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-
-                        Text(
-                            "+$${String.format("%.0f", ingresos)}",
-                            color = Color(0xFF2E7D32),
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Text("Ingresos")
+                    TextButton(onClick = { seccionActiva = "inicio" }) {
+                        Text("Inicio", color = if (seccionActiva == "inicio") Color(0xFF2E7D32) else Color.Gray)
                     }
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-
-                        Text(
-                            "-$${String.format("%.0f", gastos)}",
-                            color = Color.Red,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Text("Gastos")
+                    TextButton(onClick = { seccionActiva = "metas" }) {
+                        Text("Metas", color = if (seccionActiva == "metas") Color(0xFF2E7D32) else Color.Gray)
                     }
+                    Text("Calendario", modifier = Modifier.padding(top = 12.dp), color = Color.Gray)
+                    Text("Perfil", modifier = Modifier.padding(top = 12.dp), color = Color.Gray)
                 }
             }
         }
@@ -490,118 +461,52 @@ fun DashboardScreen() {
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
 
-            Button(
-                onClick = {
-                    mostrarIngreso = true
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(onClick = { mostrarIngreso = true }) { Text("Añadir Ingreso") }
+                        Button(onClick = { mostrarGasto = true }) { Text("Añadir Gasto") }
+                    }
                 }
-            ) {
-                Text("Añadir Ingreso")
             }
-
-            Button(
-                onClick = {
-                    mostrarGasto = true
-                }
-            ) {
-                Text("Añadir Gasto")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-
-            Text("Inicio")
-            Text("Metas")
-            Text("Calendario")
-            Text("Perfil")
         }
     }
 
+    // Cuadros de diálogo para Ingresos y Gastos permanecen intactos
     if (mostrarIngreso) {
-
         AlertDialog(
-            onDismissRequest = {
-                mostrarIngreso = false
-            },
+            onDismissRequest = { mostrarIngreso = false },
             confirmButton = {
-
-                Button(
-                    onClick = {
-
-                        val monto =
-                            cantidadIngreso.toDoubleOrNull() ?: 0.0
-
-                        saldo += monto
-                        ingresos += monto
-
-                        cantidadIngreso = ""
-                        mostrarIngreso = false
-                    }
-                ) {
-                    Text("Guardar")
-                }
+                Button(onClick = {
+                    val monto = cantidadIngreso.toDoubleOrNull() ?: 0.0
+                    saldo += monto
+                    ingresos += monto
+                    cantidadIngreso = ""
+                    mostrarIngreso = false
+                }) { Text("Guardar") }
             },
-            title = {
-                Text("Nuevo Ingreso")
-            },
-            text = {
-
-                OutlinedTextField(
-                    value = cantidadIngreso,
-                    onValueChange = {
-                        cantidadIngreso = it
-                    },
-                    label = {
-                        Text("Cantidad")
-                    }
-                )
-            }
+            title = { Text("Nuevo Ingreso") },
+            text = { OutlinedTextField(value = cantidadIngreso, onValueChange = { cantidadIngreso = it }, label = { Text("Cantidad") }) }
         )
     }
 
     if (mostrarGasto) {
-
         AlertDialog(
-            onDismissRequest = {
-                mostrarGasto = false
-            },
+            onDismissRequest = { mostrarGasto = false },
             confirmButton = {
-
-                Button(
-                    onClick = {
-
-                        val monto =
-                            cantidadGasto.toDoubleOrNull() ?: 0.0
-
-                        saldo -= monto
-                        gastos += monto
-
-                        cantidadGasto = ""
-                        mostrarGasto = false
-                    }
-                ) {
-                    Text("Guardar")
-                }
+                Button(onClick = {
+                    val monto = cantidadGasto.toDoubleOrNull() ?: 0.0
+                    saldo -= monto
+                    gastos += monto
+                    cantidadGasto = ""
+                    mostrarGasto = false
+                }) { Text("Guardar") }
             },
-            title = {
-                Text("Nuevo Gasto")
-            },
-            text = {
-
-                OutlinedTextField(
-                    value = cantidadGasto,
-                    onValueChange = {
-                        cantidadGasto = it
-                    },
-                    label = {
-                        Text("Cantidad")
-                    }
-                )
-            }
+            title = { Text("Nuevo Gasto") },
+            text = { OutlinedTextField(value = cantidadGasto, onValueChange = { cantidadGasto = it }, label = { Text("Cantidad") }) }
         )
     }
 }
