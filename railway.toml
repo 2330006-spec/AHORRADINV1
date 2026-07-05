@@ -1,0 +1,5 @@
+[build]
+buildCommand = "./gradlew :server:installDist -x check -x test"
+
+[deploy]
+startCommand = "./server/build/install/server/bin/server"
